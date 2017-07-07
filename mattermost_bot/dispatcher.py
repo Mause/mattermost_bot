@@ -47,10 +47,11 @@ class MessageDispatcher(object):
 
     def is_personal(self, msg):
         channel_id = msg['data']['post']['channel_id']
+        team_id = msg['data']['team_id']
         if channel_id in self._channel_info:
             channel_type = self._channel_info[channel_id]
         else:
-            channel = self._client.api.channel(channel_id)
+            channel = self._client.api.channel(team_id, channel_id)
             channel_type = channel['channel']['type']
             self._channel_info[channel_id] = channel_type
         return channel_type == 'D'
@@ -118,7 +119,10 @@ class MessageDispatcher(object):
     def _default_reply(self, msg):
         if settings.DEFAULT_REPLY:
             return self._client.channel_msg(
-                msg['data']['post']['channel_id'], settings.DEFAULT_REPLY)
+                msg['data']['team_id'],
+                msg['data']['post']['channel_id'],
+                settings.DEFAULT_REPLY
+            )
 
         default_reply = [
             u'Bad command "%s", You can ask me one of the '
@@ -131,7 +135,9 @@ class MessageDispatcher(object):
             for p, v in iteritems(self._plugins.commands['respond_to'])]
 
         self._client.channel_msg(
-            msg['data']['post']['channel_id'], '\n'.join(default_reply))
+            msg['data']['team_id'],
+            msg['data']['post']['channel_id'], '\n'.join(default_reply)
+        )
 
 
 class Message(object):
@@ -171,7 +177,7 @@ class Message(object):
         if channel_id in self.channels:
             channel_name = self.channels[channel_id]
         else:
-            channel = self._client.api.channel(channel_id)
+            channel = self._client.api.channel(self.get_team_id(), channel_id)
             channel_name = channel['channel']['name']
             self.channels[channel_id] = channel_name
         return channel_name
@@ -235,16 +241,19 @@ class Message(object):
 
     def send(self, text, channel_id=None):
         return self._client.channel_msg(
+            self.get_team_id(),
             channel_id or self._body['data']['post']['channel_id'], text)
 
     def update(self, text, message_id, channel_id=None):
         return self._client.update_msg(
+            self.get_team_id(),
             message_id, channel_id or self._body['data']['post']['channel_id'],
             text
         )
 
     def react(self, emoji_name):
         self._client.channel_msg(
+            self.get_team_id(),
             self._body['data']['post']['channel_id'], emoji_name,
             pid=self._body['data']['post']['id'])
 

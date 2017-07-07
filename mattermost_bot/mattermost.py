@@ -159,13 +159,15 @@ class MattermostClient(object):
         self.info = self.api.me()
         return self.user
 
-    def channel_msg(self, channel, message, pid=""):
+    def channel_msg(self, team_id, channel, message, pid=""):
         c_id = self.channels.get(channel, {}).get("id") or channel
-        return self.api.create_post(self.user["id"], c_id, message, pid=pid)
+        return self.api.create_post(
+            team_id, self.user["id"], c_id, message, pid=pid
+        )
 
-    def update_msg(self, message_id, channel, message, pid=""):
+    def update_msg(self, team_id, message_id, channel, message, pid=""):
         c_id = self.channels.get(channel, {}).get("id") or channel
-        return self.api.update_post(message_id, self.user["id"],
+        return self.api.update_post(team_id, message_id, self.user["id"],
                                     c_id, message, pid=pid)
 
     def get_users(self):

@@ -153,9 +153,12 @@ class MattermostClient(object):
         if login:
             self.login(team, email, password)
 
-    def login(self, team, email, password):
+    def login(self, teams, email, password):
         self.email = email
-        self.user = self.api.login(team, email, password)
+        if not isinstance(teams, list):
+            teams = [teams]
+        for team in teams:
+            self.user = self.api.login(team, email, password)
         self.info = self.api.me()
         return self.user
 

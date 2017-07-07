@@ -55,3 +55,5 @@ except ImportError:
         from local_settings import *
     except ImportError:
         pass
+
+BOT_TEAM = BOT_TEAM.split(',')

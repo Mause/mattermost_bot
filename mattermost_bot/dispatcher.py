@@ -177,7 +177,7 @@ class Message(object):
         return channel_name
 
     def get_team_id(self):
-        return self._client.api.team_id
+        return self._body['data']['team_id']
 
     def get_message(self):
         return self._body['data']['post']['message'].strip()
